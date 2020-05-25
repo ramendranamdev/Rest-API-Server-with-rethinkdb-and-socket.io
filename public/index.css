@@ -1,0 +1,134 @@
+.outer-box{
+    font-size:14px;
+    border:1px solid black;
+    margin:auto;
+    border-radius:5px;
+    width:500px;
+}
+
+body{
+    /**/
+    margin:0;
+    overflow-x:hidden;
+    overflow-y:auto;
+}
+
+.placeholder{
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:-1;
+    width:100vw;
+    height:100vh;
+    background-image:url('back.jpg');
+    background-position:center;
+}
+
+.bgbgbg{
+    padding-top:100px;
+    position:relative;
+    top:0;
+    left:0;
+}
+
+.hide{
+    margin:auto;
+    width:100%;
+    background-color:transparent;
+    border:0px;
+    position:absolute;
+    top:0px;
+    right:0px;
+    width:50px;
+    height:50px;
+}
+
+#password{
+    display:none;
+    margin:auto;
+}
+
+.announcement
+{
+    text-align:center;
+    font-weight:bold;
+    margin:auto;
+    margin-top:4px;
+    margin-bottom:4px;
+    border:1px solid black;
+    display:block;
+    padding:2px;
+    font-size:20px;
+}
+
+.chatroom_welcome{
+    border-bottom:1px solid black;
+    text-align:center;
+    font-size:25px;
+    padding-top:4px;
+    margin-top:0px;
+    margin-bottom:0px;
+    background-color:gainsboro;
+    font-weight:bold;
+   
+}
+
+.chat-field{
+    border-bottom:1px dashed black;
+    padding:8px;
+    text-align:left;
+    background-color:lightsteelblue;
+    height:400px;
+    overflow-y:auto;
+    
+}
+
+.chat-input{
+    width:290px;
+    height:40px;
+    resize:none;
+    border-radius: 5px ;
+    background-color:lightsteelblue;
+    border:3px solid rgb(149, 185, 231);
+    margin:auto;
+}
+
+.chat-send{
+    height:50px;
+    width:80px;
+    float:left;
+    border-radius: 5px ;
+    background-color:lightsteelblue;
+    border:2px solid rgb(149, 185, 231)
+
+}
+
+.colorOptions{
+    float:right;
+    height:44px;
+    background-color:white;
+    padding-left:2px;
+    padding-right:2px;
+    padding-top:1px;
+    padding-bottom:1px;
+    text-align:center;
+    border-radius: 5px ;
+    background-color:lightsteelblue;
+    border:2px solid rgb(149, 185, 231)
+
+}
+
+.others{
+    position:relative;
+    top:0;
+    left:0;
+    padding:16px;
+    margin:auto;
+    text-align:center;
+    height:40px;
+    background-color:gainsboro;
+}
+
+span{
+    margin-top:8px;
+}

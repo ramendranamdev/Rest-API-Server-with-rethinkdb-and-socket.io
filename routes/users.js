@@ -3,35 +3,33 @@ var rdb = require("../lib/rethink");
 var auth = require("../lib/auth");
 var validator = require("validator");
 var router = express.Router();
+var util = require("../lib/util");
 
 //Test/Welcome Route
 router.get("/hi", function (request, response) {
-  let socket_id = [];
-  const io = request.app.get("socketio");
-
-  // io.on("connection", (socket) => {
-  //   socket_id.push(socket.id);
-  //   if (socket_id[0] === socket.id) {
-  //     // remove the connection listener for any subsequent
-  //     // connections with the same ID
-  //     io.removeAllListeners("connection");
-  //   } else {
-  //     console.log(`New Client: ${socket.id}`);
-  //   }
-
-  //   socket.on("hello message", (msg) => {
-  //     console.log("just got: ", msg);
-  //     socket.emit("chat message", "hi from server");
-  //   });
-  // });
-
-  response.json({ Message: "Welcome" }).status(200);
+  const socket = request.app.get("socket");
+  if (!socket) {
+  } else {
+    console.log(socket.id);
+    console.log(socket.user);
+    socket.emit("testmsg", "Test MSG");
+  }
+  response.json("Welcome");
 });
 
 //List users
 router.get("/", auth.authorize, function (request, response) {
   rdb.findAll("users").then(function (users) {
     response.json(users);
+  });
+});
+
+router.get("/currentUser", auth.authorize, function (request, response) {
+  const { loggedInEmail } = request.locals;
+  rdb.findBy("users", "email", loggedInEmail).then((users) => {
+    let user = users[0];
+    console.log(user);
+    response.json({ Success: "OK", data: user });
   });
 });
 
@@ -95,26 +93,49 @@ router.post("/", function (request, response) {
       })
       .then(() => {
         if (user) {
-          response.json("Duplicate Entry !").status(401);
+          response
+            .json({
+              Message: "Duplicate Entry !",
+              Status: "Request Failed",
+              CODE: "409",
+            })
+            .status(409);
         } else {
-          rdb.save("users", newUser).then(function (result) {
-            let { changes } = result;
-            const userId = changes[0].new_val.id;
+          const newUserLocation = {
+            location: rdb.point(-117.220406, 32.719464),
+          };
 
-            const newUserLocation = {
-              userId: userId,
-              location: rdb.point(-117.220406, 32.719464),
-            };
-
-            rdb.save("location", newUserLocation).then((result) => {
+          rdb
+            .save("location", newUserLocation)
+            .then((result) => {
               let { changes } = result;
-              console.log(changes[0]);
+              const locationId = changes[0].new_val.id;
+
+              console.log(`Location object saved: ${locationId}`);
+
+              var newUser = {
+                name: request.body.name,
+                email: request.body.email,
+                password: hash,
+                location: locationId,
+                token: "<token>",
+              };
+
+              rdb.save("users", newUser).then((result) => {
+                let res = result.changes[0].new_val;
+                response.json({
+                  Message: "Registered Successfully",
+                  Result: res,
+                });
+              });
+            })
+            .catch((err) => {
+              rdb.destroy("location", locationId).then(() => {
+                console.log(err);
+                console.log("Location object deleted");
+                response.json({ Message: "Error", Error: err });
+              });
             });
-
-            console.log(changes[0].new_val.id);
-
-            response.json(result);
-          });
         }
       });
   });
@@ -122,23 +143,69 @@ router.post("/", function (request, response) {
 
 //Update User
 router.put("/:id", auth.authorize, function (request, response) {
-  rdb.find("users", request.params.id).then(function (user) {
-    var updateUser = {
-      name: request.body.user || user.name,
-      email: request.body.email || user.email,
-    };
+  rdb
+    .find("users", request.params.id)
+    .then(function (user) {
+      var updateUser = {
+        name: request.body.name || user.name,
+        email: request.body.email || user.email,
+      };
 
-    rdb.edit("users", user.id, updateUser).then(function (results) {
-      response.json(results);
+      rdb.edit("users", user.id, updateUser).then(function (results) {
+        response.json(results);
+      });
+    })
+    .catch((err) => {
+      response.json({
+        Message: "Error",
+        Suggetion: "Check user id",
+        Error: err,
+      });
     });
-  });
 });
 
 //Delete user by id
 router.delete("/:id", auth.authorize, function (request, response) {
-  rdb.destroy("users", request.params.id).then(function (results) {
-    response.json(results);
-  });
+  const userId = request.params.id;
+
+  if (userId == "")
+    response.json({ Message: "Please use valid user id", Error: err });
+
+  rdb
+    .find("users", userId)
+    .then((user) => {
+      let { location } = user;
+
+      rdb
+        .destroy("location", location)
+        .then((result) => {
+          rdb
+            .destroy("users", userId)
+            .then((result) =>
+              response.json({ Message: "User removed successfully" })
+            )
+            .catch((err) =>
+              response.json({ Message: "Cannot remove user", Error: err })
+            );
+        })
+        .catch((err) =>
+          response.json({
+            Message: "Can not remove location data of user",
+            Status: "Request Failed",
+            Error: err,
+          })
+        );
+    })
+    .catch((err) => {
+      response.json({
+        Message: "User nt found",
+        Error: err,
+      });
+    });
+
+  // rdb.destroy("users", request.params.id).then(function (results) {
+  //   response.json(results);
+  // });
 
   // .then( () => {
   //     rdb.findBy("users","email","ramendranamdev@gmail.com")
@@ -154,6 +221,7 @@ router.delete("/:id", auth.authorize, function (request, response) {
   // });
 });
 
+//Signout
 router.post("/signout", auth.authorize, function (request, response) {
   const { loggedInEmail } = request.locals;
   console.log(loggedInEmail);

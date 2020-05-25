@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello world</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src=" client.js"></script>
+    <!-- <script src="shared-webworke-client.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="index.css" />
+  </head>
+
+  <body>
+    <div class="bgbgbg">
+      <div class="placeholder"></div>
+      <div class="outer-box" id="outbox">
+        <button id="exit">Exit</button>
+        <p class="chatroom_welcome">Welcome to the chat room</p>
+        <div class="chat-field" id="chat_history"></div>
+        <div class="others">
+          <button class="chat-send" id="send" type="button">Send</button>
+          <textarea class="chat-input" id="chatbox"></textarea>
+        </div>
+      </div>
+      <button class="hide" id="hide_button"></button>
+      <textarea id="password"></textarea>
+    </div>
+  </body>
+</html>
